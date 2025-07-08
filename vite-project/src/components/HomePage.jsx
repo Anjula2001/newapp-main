@@ -2,48 +2,8 @@ import { useState } from 'react';
 import './HomePage.css';
 
 function HomePage({ onPlayGame }) {
-  const [selectedDifficulty, setSelectedDifficulty] = useState('intermediate');
-
-  const difficulties = [
-    { 
-      id: 'beginner', 
-      name: 'Beginner', 
-      elo: '1000 ELO',
-      description: 'Perfect for learning chess basics',
-      icon: '🌱'
-    },
-    { 
-      id: 'intermediate', 
-      name: 'Intermediate', 
-      elo: '1400 ELO',
-      description: 'Good challenge for club players',
-      icon: '⚡'
-    },
-    { 
-      id: 'advanced', 
-      name: 'Advanced', 
-      elo: '1800 ELO',
-      description: 'Strong amateur level',
-      icon: '🔥'
-    },
-    { 
-      id: 'master', 
-      name: 'Master', 
-      elo: '2200 ELO',
-      description: 'Expert tournament level',
-      icon: '👑'
-    },
-    { 
-      id: 'grandmaster', 
-      name: 'Grandmaster', 
-      elo: '3500+ ELO',
-      description: 'Professional world-class strength',
-      icon: '🏆'
-    }
-  ];
-
   const handlePlayGame = () => {
-    onPlayGame(selectedDifficulty);
+    onPlayGame('intermediate'); // Default difficulty
   };
 
   return (
@@ -81,30 +41,10 @@ function HomePage({ onPlayGame }) {
             </div>
           </div>
 
-          <div className="game-setup">
-            <h2>Choose Your Challenge</h2>
-            <div className="difficulty-selector">
-              {difficulties.map((diff) => (
-                <div
-                  key={diff.id}
-                  className={`difficulty-card ${selectedDifficulty === diff.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedDifficulty(diff.id)}
-                >
-                  <div className="difficulty-icon">{diff.icon}</div>
-                  <div className="difficulty-info">
-                    <h4>{diff.name}</h4>
-                    <div className="difficulty-elo">{diff.elo}</div>
-                    <p>{diff.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <button className="play-button" onClick={handlePlayGame}>
-              <span className="play-icon">▶</span>
-              Start Game
-            </button>
-          </div>
+          <button className="play-button" onClick={handlePlayGame}>
+            <span className="play-icon">▶</span>
+            Start Game
+          </button>
         </div>
       </div>
 
