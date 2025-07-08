@@ -8,13 +8,15 @@ import './App.css'
 function App() {
   const [currentView, setCurrentView] = useState('home'); // 'home', 'mode-selection', 'single-player', 'multiplayer'
   const [selectedDifficulty, setSelectedDifficulty] = useState('intermediate');
+  const [selectedColor, setSelectedColor] = useState('white');
 
   const handlePlayGame = (difficulty) => {
     setSelectedDifficulty(difficulty);
     setCurrentView('mode-selection');
   };
 
-  const handleSelectMode = (mode) => {
+  const handleSelectMode = (mode, color) => {
+    setSelectedColor(color);
     if (mode === 'single') {
       setCurrentView('single-player');
     } else if (mode === 'multiplayer') {
@@ -47,12 +49,14 @@ function App() {
       {currentView === 'single-player' && (
         <ChessGame 
           difficulty={selectedDifficulty} 
+          playerColor={selectedColor}
           onBackToHome={handleBackToModeSelection} 
         />
       )}
       
       {currentView === 'multiplayer' && (
         <MultiplayerChess 
+          playerColor={selectedColor}
           onBackToHome={handleBackToModeSelection}
         />
       )}

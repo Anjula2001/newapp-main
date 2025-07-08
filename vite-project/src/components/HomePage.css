@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 3rem 2rem;
   position: relative;
 }
 
@@ -38,7 +38,7 @@
 }
 
 .logo-section {
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
 }
 
 .chess-pieces {
@@ -116,7 +116,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
-  margin-bottom: 4rem;
+  margin-bottom: 0;
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
@@ -252,10 +252,23 @@
   font-size: 1.1rem;
 }
 
+.cta-section {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.cta-subtitle {
+  font-size: 1rem;
+  color: #b8c6db;
+  margin-top: 1rem;
+  margin-bottom: 0;
+  font-weight: 300;
+}
+
 .stats-section {
   background: rgba(0, 0, 0, 0.2);
   padding: 3rem 2rem;
-  margin-top: 4rem;
+  margin-top: 2rem;
 }
 
 .stats-container {
@@ -299,7 +312,7 @@
   }
   
   .hero-section {
-    padding: 1rem;
+    padding: 2rem 1rem;
   }
   
   .features-grid {
@@ -315,11 +328,19 @@
     padding: 1rem 2.5rem;
     font-size: 1.1rem;
   }
+  
+  .cta-subtitle {
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 480px) {
   .main-title {
     font-size: 2.5rem;
+  }
+  
+  .hero-section {
+    padding: 1.5rem 1rem;
   }
   
   .difficulty-selector {
@@ -332,5 +353,14 @@
   
   .feature-card {
     padding: 1.5rem;
+  }
+  
+  .play-button {
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+  }
+  
+  .cta-subtitle {
+    font-size: 0.85rem;
   }
 }

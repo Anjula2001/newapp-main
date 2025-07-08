@@ -23,10 +23,13 @@ function HomePage({ onPlayGame }) {
             <p className="subtitle">Master the game of kings with Stockfish 17</p>
           </div>
 
-          <button className="play-button" onClick={handlePlayGame}>
-            <span className="play-icon">▶</span>
-            Start Game
-          </button>
+          <div className="cta-section">
+            <button className="play-button" onClick={handlePlayGame}>
+              <span className="play-icon">▶</span>
+              Start Game
+            </button>
+            <p className="cta-subtitle">Choose your difficulty and game mode in the next step</p>
+          </div>
 
           <div className="features-grid">
             <div className="feature-card">

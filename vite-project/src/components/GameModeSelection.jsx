@@ -3,6 +3,7 @@ import './GameModeSelection.css';
 
 function GameModeSelection({ selectedDifficulty, onBackToHome, onSelectMode }) {
   const [selectedMode, setSelectedMode] = useState('single');
+  const [selectedColor, setSelectedColor] = useState('white');
 
   const gameModes = [
     {
@@ -47,7 +48,7 @@ function GameModeSelection({ selectedDifficulty, onBackToHome, onSelectMode }) {
   }
 
   const handleStartGame = () => {
-    onSelectMode(selectedMode);
+    onSelectMode(selectedMode, selectedColor);
   };
 
   return (
@@ -97,6 +98,42 @@ function GameModeSelection({ selectedDifficulty, onBackToHome, onSelectMode }) {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="color-selection">
+          <h3>Choose Your Color</h3>
+          <div className="color-selector">
+            <div
+              className={`color-option ${selectedColor === 'white' ? 'selected' : ''}`}
+              onClick={() => setSelectedColor('white')}
+            >
+              <div className="color-piece">♔</div>
+              <div className="color-info">
+                <h4>White</h4>
+                <p>{selectedMode === 'single' ? 'You play as White' : 'White starts first'}</p>
+              </div>
+            </div>
+            <div
+              className={`color-option ${selectedColor === 'black' ? 'selected' : ''}`}
+              onClick={() => setSelectedColor('black')}
+            >
+              <div className="color-piece">♚</div>
+              <div className="color-info">
+                <h4>Black</h4>
+                <p>{selectedMode === 'single' ? 'You play as Black' : 'Black plays second'}</p>
+              </div>
+            </div>
+            <div
+              className={`color-option ${selectedColor === 'random' ? 'selected' : ''}`}
+              onClick={() => setSelectedColor('random')}
+            >
+              <div className="color-piece">♔♚</div>
+              <div className="color-info">
+                <h4>Random</h4>
+                <p>{selectedMode === 'single' ? 'Random color assignment' : 'Random starting player'}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="mode-actions">

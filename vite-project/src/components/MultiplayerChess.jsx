@@ -20,12 +20,13 @@ const pieceImages = {
   bp: bP, br: bR, bn: bN, bb: bB, bq: bQ, bk: bK,
 };
 
-function MultiplayerChess({ onBackToHome }) {
+function MultiplayerChess({ playerColor, onBackToHome }) {
   const [game, setGame] = useState(new Chess());
   const [pieces, setPieces] = useState({});
   const [status, setStatus] = useState('');
   const [moveInput, setMoveInput] = useState('');
   const [moveHistory, setMoveHistory] = useState([]);
+  const [actualPlayerColor, setActualPlayerColor] = useState('white');
   const [gameStats, setGameStats] = useState({
     whiteWins: 0,
     blackWins: 0,
@@ -34,6 +35,15 @@ function MultiplayerChess({ onBackToHome }) {
   });
   const [draggedPiece, setDraggedPiece] = useState(null);
   const [validMoves, setValidMoves] = useState([]);
+
+  // Determine actual player color based on selection
+  useEffect(() => {
+    if (playerColor === 'random') {
+      setActualPlayerColor(Math.random() > 0.5 ? 'white' : 'black');
+    } else {
+      setActualPlayerColor(playerColor);
+    }
+  }, [playerColor]);
 
   // Convert chess.js board state to our pieces format
   const updateBoardState = () => {
@@ -258,29 +268,32 @@ function MultiplayerChess({ onBackToHome }) {
 
   const renderBoard = () => {
     const squares = [];
+    const boardFlipped = actualPlayerColor === 'black';
     
     // Add file labels (a-h)
     for (let i = 0; i < 8; i++) {
+      const fileIndex = boardFlipped ? 7 - i : i;
       squares.push(
         <div
           key={`file-${i}`}
           className="board-label file-label"
           style={{ left: `${i * 70 + 35}px` }}
         >
-          {String.fromCharCode('a'.charCodeAt(0) + i)}
+          {String.fromCharCode('a'.charCodeAt(0) + fileIndex)}
         </div>
       );
     }
 
     // Add rank labels (1-8)
     for (let i = 0; i < 8; i++) {
+      const rankNumber = boardFlipped ? i + 1 : 8 - i;
       squares.push(
         <div
           key={`rank-${i}`}
           className="board-label rank-label"
           style={{ top: `${i * 70 + 35}px` }}
         >
-          {8 - i}
+          {rankNumber}
         </div>
       );
     }
@@ -290,7 +303,12 @@ function MultiplayerChess({ onBackToHome }) {
       const file = i % 8;
       const rank = Math.floor(i / 8);
       const light = (file + rank) % 2 === 0;
-      const squareName = String.fromCharCode('a'.charCodeAt(0) + file) + (8 - rank);
+      
+      // Flip the board when player is black
+      const actualFile = boardFlipped ? 7 - file : file;
+      const actualRank = boardFlipped ? rank + 1 : 8 - rank;
+      const squareName = String.fromCharCode('a'.charCodeAt(0) + actualFile) + actualRank;
+      
       const piece = pieces[squareName];
       const isInCheck = game.isCheck() && piece?.toLowerCase().endsWith('k') && piece[0] === game.turn();
       const isValidMove = validMoves.includes(squareName);

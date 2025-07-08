@@ -21,7 +21,7 @@ const pieceImages = {
   bp: bP, br: bR, bn: bN, bb: bB, bq: bQ, bk: bK,
 };
 
-function ChessGame({ difficulty, onBackToHome }) {
+function ChessGame({ difficulty, playerColor, onBackToHome }) {
   const [game, setGame] = useState(new Chess());
   const [pieces, setPieces] = useState({});
   const [draggedPiece, setDraggedPiece] = useState(null);
@@ -29,6 +29,7 @@ function ChessGame({ difficulty, onBackToHome }) {
   const [lastMoveFrom, setLastMoveFrom] = useState(null);
   const [lastMoveTo, setLastMoveTo] = useState(null);
   const [status, setStatus] = useState('');
+  const [actualPlayerColor, setActualPlayerColor] = useState('white');
   const [gameStats, setGameStats] = useState({
     playerWins: 0,
     aiWins: 0,
@@ -37,6 +38,15 @@ function ChessGame({ difficulty, onBackToHome }) {
   });
 
   const { isReady, bestMove, getBestMove, isThinking, eloRating, currentSettings, resetAI } = useStockfish(difficulty);
+
+  // Determine actual player color based on selection
+  useEffect(() => {
+    if (playerColor === 'random') {
+      setActualPlayerColor(Math.random() > 0.5 ? 'white' : 'black');
+    } else {
+      setActualPlayerColor(playerColor);
+    }
+  }, [playerColor]);
 
   // Convert chess.js board state to our pieces format
   const updateBoardState = () => {
@@ -129,7 +139,9 @@ function ChessGame({ difficulty, onBackToHome }) {
   const handleDrop = (e, toSquare) => {
     e.preventDefault();
     const fromSquare = e.dataTransfer.getData('text/plain');
-    if (fromSquare && pieces[fromSquare] && pieces[fromSquare][0] === 'w' && game.turn() === 'w') {
+    const playerTurn = actualPlayerColor === 'white' ? 'w' : 'b';
+    
+    if (fromSquare && pieces[fromSquare] && pieces[fromSquare][0] === playerTurn && game.turn() === playerTurn) {
       makeMove(fromSquare, toSquare);
     }
     setDraggedPiece(null);
@@ -152,7 +164,8 @@ function ChessGame({ difficulty, onBackToHome }) {
         updateBoardState();
 
         // Trigger AI move after player's move
-        if (game.turn() === 'b' && !game.isGameOver() && isReady) {
+        const aiColor = actualPlayerColor === 'white' ? 'b' : 'w';
+        if (game.turn() === aiColor && !game.isGameOver() && isReady) {
           setTimeout(() => {
             getBestMove(game.fen());
           }, 300);
@@ -165,7 +178,8 @@ function ChessGame({ difficulty, onBackToHome }) {
 
   // Handle AI move
   useEffect(() => {
-    if (bestMove && game.turn() === 'b' && !game.isGameOver()) {
+    const aiColor = actualPlayerColor === 'white' ? 'b' : 'w';
+    if (bestMove && game.turn() === aiColor && !game.isGameOver()) {
       try {
         const move = game.move(bestMove);
         if (move) {
@@ -179,7 +193,7 @@ function ChessGame({ difficulty, onBackToHome }) {
         console.error('Invalid AI move:', bestMove);
       }
     }
-  }, [bestMove]);
+  }, [bestMove, actualPlayerColor]);
 
   // Initialize AI when ready
   useEffect(() => {
@@ -193,7 +207,12 @@ function ChessGame({ difficulty, onBackToHome }) {
     const newGame = new Chess();
     setGame(newGame);
     updateBoardState();
-  }, []);
+    
+    // If player is black, AI should make the first move
+    if (actualPlayerColor === 'black' && isReady) {
+      getBestMove(newGame.fen());
+    }
+  }, [actualPlayerColor, isReady]);
 
   const startNewGame = () => {
     const newGame = new Chess();
@@ -202,33 +221,43 @@ function ChessGame({ difficulty, onBackToHome }) {
     setLastMoveTo(null);
     updateBoardState();
     resetAI();
+    
+    // If player is black, AI should make the first move
+    if (actualPlayerColor === 'black' && isReady) {
+      setTimeout(() => {
+        getBestMove(newGame.fen());
+      }, 500);
+    }
   };
 
   const renderBoard = () => {
     const squares = [];
+    const boardFlipped = actualPlayerColor === 'black';
     
     // Add file labels (a-h)
     for (let i = 0; i < 8; i++) {
+      const fileIndex = boardFlipped ? 7 - i : i;
       squares.push(
         <div
           key={`file-${i}`}
           className="board-label file-label"
           style={{ left: `${i * 70 + 35}px` }}
         >
-          {String.fromCharCode('a'.charCodeAt(0) + i)}
+          {String.fromCharCode('a'.charCodeAt(0) + fileIndex)}
         </div>
       );
     }
 
     // Add rank labels (1-8)
     for (let i = 0; i < 8; i++) {
+      const rankNumber = boardFlipped ? i + 1 : 8 - i;
       squares.push(
         <div
           key={`rank-${i}`}
           className="board-label rank-label"
           style={{ top: `${i * 70 + 35}px` }}
         >
-          {8 - i}
+          {rankNumber}
         </div>
       );
     }
@@ -238,7 +267,12 @@ function ChessGame({ difficulty, onBackToHome }) {
       const file = i % 8;
       const rank = Math.floor(i / 8);
       const light = (file + rank) % 2 === 0;
-      const squareName = String.fromCharCode('a'.charCodeAt(0) + file) + (8 - rank);
+      
+      // Flip the board when player is black
+      const actualFile = boardFlipped ? 7 - file : file;
+      const actualRank = boardFlipped ? rank + 1 : 8 - rank;
+      const squareName = String.fromCharCode('a'.charCodeAt(0) + actualFile) + actualRank;
+      
       const piece = pieces[squareName];
       const isInCheck = game.isCheck() && piece?.toLowerCase().endsWith('k') && piece[0] === game.turn();
       
