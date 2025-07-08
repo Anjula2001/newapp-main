@@ -47,6 +47,11 @@ function HomePage({ onPlayGame }) {
               <h3>Instant Response</h3>
               <p>Fast, accurate moves with professional-grade analysis</p>
             </div>
+            <div className="feature-card">
+              <div className="feature-icon">🧩</div>
+              <h3>Real-Board Multiplayer</h3>
+              <p>Seamlessly connect with a real physical chess board — one player moves on the board, the other plays online in real time.</p>
+            </div>
           </div>
         </div>
       </div>
