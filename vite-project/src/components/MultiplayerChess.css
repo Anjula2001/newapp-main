@@ -118,6 +118,11 @@
   margin: 0 0 1rem 0;
   color: #ff6b6b;
   font-size: 1.2rem;
+  text-align: center;
+}
+
+.move-input-section .drag-instructions {
+  margin-bottom: 1rem;
 }
 
 .move-input-section form {
@@ -331,6 +336,19 @@
   font-size: 0.9rem;
 }
 
+.drag-instructions p:first-child {
+  margin-top: 0;
+}
+
+.drag-instructions p:last-child {
+  margin-bottom: 0;
+}
+
+/* Waiting state styling */
+.drag-instructions p:contains("⏳") {
+  color: #ffd700;
+}
+
 .board-label {
   position: absolute;
   color: #ffd700;
@@ -487,6 +505,23 @@
   color: #b8c6db;
   font-size: 0.8rem;
   font-family: monospace;
+}
+
+/* Drag-only message styling */
+.drag-only-message {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.drag-only-message p {
+  margin: 0;
+  color: #b8c6db;
+  font-size: 0.9rem;
+  font-style: italic;
 }
 
 /* Responsive Design */

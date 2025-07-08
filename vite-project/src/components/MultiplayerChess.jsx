@@ -160,11 +160,12 @@ function MultiplayerChess({ playerColor, onBackToHome }) {
     return false;
   };
 
-  // Drag and drop functions for white pieces
+  // Drag and drop functions for bottom player only
   const handleDragStart = (e, square) => {
     const piece = pieces[square];
-    // Only allow white pieces to be dragged and only on white's turn
-    if (!piece || piece[0] !== 'w' || game.turn() !== 'w') {
+    const playerColorCode = actualPlayerColor === 'white' ? 'w' : 'b';
+    // Only allow bottom player's pieces to be dragged when it's their turn
+    if (!piece || piece[0] !== playerColorCode || game.turn() !== playerColorCode) {
       e.preventDefault();
       return;
     }
@@ -233,8 +234,9 @@ function MultiplayerChess({ playerColor, onBackToHome }) {
     e.preventDefault();
     const move = moveInput.trim();
     
-    // Only allow black to make moves via input
-    if (game.turn() !== 'b') {
+    const opponentColorCode = actualPlayerColor === 'white' ? 'b' : 'w';
+    // Only allow text input for opponent's moves (top player)
+    if (game.turn() !== opponentColorCode) {
       return;
     }
     
@@ -324,8 +326,8 @@ function MultiplayerChess({ playerColor, onBackToHome }) {
         >
           {piece && (
             <div 
-              className={`piece ${piece[0] === 'w' && game.turn() === 'w' ? 'draggable' : ''}`}
-              draggable={piece[0] === 'w' && game.turn() === 'w'}
+              className={`piece ${piece[0] === (actualPlayerColor === 'white' ? 'w' : 'b') && game.turn() === (actualPlayerColor === 'white' ? 'w' : 'b') ? 'draggable' : ''}`}
+              draggable={piece[0] === (actualPlayerColor === 'white' ? 'w' : 'b') && game.turn() === (actualPlayerColor === 'white' ? 'w' : 'b')}
               onDragStart={(e) => handleDragStart(e, squareName)}
               onDragEnd={handleDragEnd}
             >
@@ -376,20 +378,30 @@ function MultiplayerChess({ playerColor, onBackToHome }) {
 
           <div className="move-input-section">
             <h3>
-              {game.turn() === 'w' ? 'White: Use Drag & Drop' : 'Black: Enter Move'}
+              {game.turn() === (actualPlayerColor === 'white' ? 'w' : 'b') 
+                ? `${actualPlayerColor === 'white' ? 'White' : 'Black'}: Use Drag & Drop` 
+                : `${actualPlayerColor === 'white' ? 'Black' : 'White'}: Enter Move`}
             </h3>
-            {game.turn() === 'w' ? (
-              <div className="drag-instructions">
-                <p>🖱️ Drag and drop white pieces to make your move</p>
-                <p>Click and drag any white piece to see valid moves</p>
-              </div>
-            ) : (
+            <div className="drag-instructions">
+              {game.turn() === (actualPlayerColor === 'white' ? 'w' : 'b') ? (
+                <div>
+                  <p>🖱️ Your turn! Drag and drop your pieces to move</p>
+                  <p>Click and drag any of your pieces to see valid moves</p>
+                </div>
+              ) : (
+                <div>
+                  <p>⌨️ Opponent's turn - enter their move using text input</p>
+                  <p>Use algebraic notation or from-to format</p>
+                </div>
+              )}
+            </div>
+            {game.turn() === (actualPlayerColor === 'white' ? 'b' : 'w') ? (
               <form onSubmit={handleMoveSubmit}>
                 <input
                   type="text"
                   value={moveInput}
                   onChange={(e) => setMoveInput(e.target.value)}
-                  placeholder="e.g., e5, Nf6, e7-e5"
+                  placeholder="Enter opponent's move (e.g., e5, Nf6, e7-e5)"
                   className="move-input"
                   disabled={game.isGameOver()}
                 />
@@ -397,11 +409,17 @@ function MultiplayerChess({ playerColor, onBackToHome }) {
                   Make Move
                 </button>
               </form>
+            ) : (
+              <div className="drag-only-message">
+                <p>Use drag and drop to make your move</p>
+              </div>
             )}
             
             <div className="input-help">
-              <h4>Move Formats (Black only):</h4>
+              <h4>Move Input Methods:</h4>
               <ul>
+                <li><strong>Bottom Player:</strong> Drag & Drop only</li>
+                <li><strong>Top Player:</strong> Text Input only</li>
                 <li><strong>Standard:</strong> e5, Nf6, Qxd4</li>
                 <li><strong>From-To:</strong> e7-e5, g8-f6</li>
                 <li><strong>Castling:</strong> O-O, O-O-O</li>
@@ -461,7 +479,7 @@ function MultiplayerChess({ playerColor, onBackToHome }) {
               <strong>Move:</strong> {Math.ceil(game.history().length / 2) || 1}
             </div>
             <div className="game-mode">
-              <strong>Mode:</strong> Hybrid (White: Drag & Drop, Black: Input)
+              <strong>Mode:</strong> Hybrid (Bottom: Drag & Drop, Top: Text Input)
             </div>
             <div className="fen-position">
               <strong>FEN:</strong> 
