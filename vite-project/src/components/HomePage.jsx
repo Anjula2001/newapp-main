@@ -23,6 +23,11 @@ function HomePage({ onPlayGame }) {
             <p className="subtitle">Master the game of kings with Stockfish 17</p>
           </div>
 
+          <button className="play-button" onClick={handlePlayGame}>
+            <span className="play-icon">▶</span>
+            Start Game
+          </button>
+
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">🎯</div>
@@ -40,11 +45,6 @@ function HomePage({ onPlayGame }) {
               <p>Fast, accurate moves with professional-grade analysis</p>
             </div>
           </div>
-
-          <button className="play-button" onClick={handlePlayGame}>
-            <span className="play-icon">▶</span>
-            Start Game
-          </button>
         </div>
       </div>
 

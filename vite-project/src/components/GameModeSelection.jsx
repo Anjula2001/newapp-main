@@ -22,7 +22,7 @@ function GameModeSelection({ selectedDifficulty, onBackToHome, onSelectMode }) {
     {
       id: 'multiplayer',
       name: 'Multiplayer',
-      subtitle: 'Position Input',
+      subtitle: 'Real-time Chess',
       description: 'Play with manual move input for both players using algebraic notation',
       features: [
         'Manual Move Input',
