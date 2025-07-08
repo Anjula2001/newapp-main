@@ -433,7 +433,7 @@ function MultiplayerChess({ playerColor, onBackToHome }) {
           <div className="board-container">
             <div className="board-wrapper">
               <div className="row-labels">
-                {[8, 7, 6, 5, 4, 3, 2, 1].map(num => (
+                {(actualPlayerColor === 'black' ? [1, 2, 3, 4, 5, 6, 7, 8] : [8, 7, 6, 5, 4, 3, 2, 1]).map(num => (
                   <div key={num} className="row-label">{num}</div>
                 ))}
               </div>
@@ -442,7 +442,7 @@ function MultiplayerChess({ playerColor, onBackToHome }) {
               </div>
             </div>
             <div className="column-labels">
-              {['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(letter => (
+              {(actualPlayerColor === 'black' ? ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'] : ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']).map(letter => (
                 <div key={letter} className="column-label">{letter}</div>
               ))}
             </div>

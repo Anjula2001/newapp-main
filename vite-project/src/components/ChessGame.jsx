@@ -115,8 +115,9 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
 
   const handleDragStart = (e, square) => {
     const piece = pieces[square];
-    // Only allow dragging of white pieces on white's turn
-    if (piece && piece[0] === 'w' && game.turn() === 'w') {
+    const playerColorCode = actualPlayerColor === 'white' ? 'w' : 'b';
+    // Only allow dragging of player's pieces on their turn
+    if (piece && piece[0] === playerColorCode && game.turn() === playerColorCode) {
       setDraggedPiece(piece);
       setDraggedFrom(square);
       e.dataTransfer.setData('text/plain', square);
@@ -289,7 +290,7 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
           {piece && (
             <div 
               className="piece"
-              draggable={piece[0] === 'w' && game.turn() === 'w'}
+              draggable={piece[0] === (actualPlayerColor === 'white' ? 'w' : 'b') && game.turn() === (actualPlayerColor === 'white' ? 'w' : 'b')}
               onDragStart={(e) => handleDragStart(e, squareName)}
               onDragEnd={handleDragEnd}
             >
@@ -356,7 +357,7 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
           <div className="board-container">
             <div className="board-wrapper">
               <div className="row-labels">
-                {[8, 7, 6, 5, 4, 3, 2, 1].map(num => (
+                {(actualPlayerColor === 'black' ? [1, 2, 3, 4, 5, 6, 7, 8] : [8, 7, 6, 5, 4, 3, 2, 1]).map(num => (
                   <div key={num} className="row-label">{num}</div>
                 ))}
               </div>
@@ -365,7 +366,7 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
               </div>
             </div>
             <div className="column-labels">
-              {['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(letter => (
+              {(actualPlayerColor === 'black' ? ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'] : ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']).map(letter => (
                 <div key={letter} className="column-label">{letter}</div>
               ))}
             </div>
@@ -377,7 +378,7 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
           <div className="move-history">
             <h3>Game Info</h3>
             <div className="current-position">
-              <strong>Turn:</strong> {game.turn() === 'w' ? 'White (You)' : 'Black (AI)'}
+              <strong>Turn:</strong> {game.turn() === (actualPlayerColor === 'white' ? 'w' : 'b') ? 'You' : 'AI'}
             </div>
             <div className="move-count">
               <strong>Move:</strong> {Math.ceil(game.history().length / 2)}
