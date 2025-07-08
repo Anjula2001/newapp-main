@@ -59,7 +59,6 @@ function GameModeSelection({ selectedDifficulty, onBackToHome, onSelectMode }) {
         </button>
         <div className="mode-title">
           <h1>Choose Game Mode</h1>
-          <p>Selected Difficulty: <span className="difficulty-badge">{selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1)}</span></p>
         </div>
         <div className="spacer"></div>
       </div>
