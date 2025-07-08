@@ -338,14 +338,48 @@
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
 }
 
-.file-label {
-  bottom: -25px;
-  transform: translateX(-50%);
+.row-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin-right: 1rem;
+  padding: 3px 0;
+  height: 566px; /* Match board height */
 }
 
-.rank-label {
-  left: -25px;
-  transform: translateY(-50%);
+.row-label {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  min-width: 30px;
+}
+
+.column-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 3px;
+  margin-left: 50px;
+  padding: 1px;
+  width: 566px; /* Same as board width (8 * 70px + 6px border) */
+}
+
+.column-label {
+  width: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  min-height: 30px;
 }
 
 .game-status {

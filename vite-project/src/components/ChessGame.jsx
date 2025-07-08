@@ -320,8 +320,20 @@ function ChessGame({ difficulty, onBackToHome }) {
 
         <div className="board-section">
           <div className="board-container">
-            <div className="board" id="board">
-              {renderBoard()}
+            <div className="board-wrapper">
+              <div className="row-labels">
+                {[8, 7, 6, 5, 4, 3, 2, 1].map(num => (
+                  <div key={num} className="row-label">{num}</div>
+                ))}
+              </div>
+              <div className="board" id="board">
+                {renderBoard()}
+              </div>
+            </div>
+            <div className="column-labels">
+              {['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(letter => (
+                <div key={letter} className="column-label">{letter}</div>
+              ))}
             </div>
             <div className="game-status">{status}</div>
           </div>

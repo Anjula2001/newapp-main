@@ -49,19 +49,38 @@
   gap: 1rem;
 }
 
-.piece {
-  display: inline-block;
-  animation: float 3s ease-in-out infinite;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+/* SIMPLE UP AND DOWN ANIMATION FOR CHESS PIECES */
+.chess-pieces .piece {
+  display: inline-block !important;
+  animation: moveUpDown 3s ease-in-out infinite !important;
+  font-size: 3rem !important;
 }
 
-.piece.king { animation-delay: 0s; }
-.piece.queen { animation-delay: 0.5s; }
-.piece.rook { animation-delay: 1s; }
+.chess-pieces .piece.king { 
+  animation-delay: 0s !important;
+  color: #ffd700 !important;
+}
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+.chess-pieces .piece.queen { 
+  animation-delay: 1s !important;
+  color: #e6e6fa !important;
+}
+
+.chess-pieces .piece.rook { 
+  animation-delay: 2s !important;
+  color: #daa520 !important;
+}
+
+@keyframes moveUpDown {
+  0% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-30px); 
+  }
+  100% { 
+    transform: translateY(0px); 
+  }
 }
 
 .main-title {
