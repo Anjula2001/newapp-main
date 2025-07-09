@@ -433,6 +433,36 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
     localStorage.setItem('chessGameStats', JSON.stringify(gameStats));
   }, [gameStats]);
 
+  // Test function to verify backend communication
+  const testBackendCommunication = async () => {
+    console.log('🧪 Testing backend communication...');
+    try {
+      const response = await fetch('http://localhost:3001/getBestMove', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          fen: game.fen(),
+          depth: 10 
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Backend communication successful!');
+        console.log('📡 Response:', data);
+        alert(`Backend Test Successful!\nBest move: ${data.bestMove}\nEngine: ${data.message}`);
+      } else {
+        console.error('❌ Backend response error:', response.status);
+        alert(`Backend Error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('❌ Backend communication failed:', error);
+      alert(`Backend Communication Failed: ${error.message}`);
+    }
+  };
+
   return (
     <div className="chess-game">
       <div className="game-header">
@@ -444,6 +474,9 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
         </div>
         <button className="new-game-button" onClick={handleNewGameClick}>
           New Game
+        </button>
+        <button className="test-backend-button" onClick={testBackendCommunication} style={{marginLeft: '10px', backgroundColor: '#4CAF50'}}>
+          Test Backend
         </button>
       </div>
 

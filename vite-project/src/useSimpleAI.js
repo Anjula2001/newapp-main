@@ -1,6 +1,41 @@
-// Fallback Simple Chess AI (when Stockfish fails)
+// Chess AI with Stockfish Backend Integration and Simple AI Fallback
 import { useEffect, useState, useCallback } from 'react';
 import { Chess } from 'chess.js';
+
+// Communication function to get best move from backend Stockfish API
+const getStockfishMove = async (fen, depth = 15) => {
+  try {
+    console.log('🌐 Sending request to Stockfish backend...');
+    
+    const response = await fetch('http://localhost:3001/getBestMove', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        fen: fen,
+        depth: depth 
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Backend error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('📡 Backend response:', data);
+    
+    if (data.bestMove && data.bestMove !== '(none)') {
+      return data.bestMove;
+    } else {
+      throw new Error('No valid move received from backend');
+    }
+    
+  } catch (error) {
+    console.error('❌ Backend communication error:', error);
+    throw error;
+  }
+};
 
 // Simple chess AI using basic evaluation
 const evaluatePosition = (game) => {
@@ -81,52 +116,77 @@ export const useSimpleAI = (difficulty = 'intermediate') => {
     }, 500);
   }, []);
 
-  const getBestMove = useCallback((fen) => {
-    console.log('🧠 Simple AI calculating move for:', fen);
+  const getBestMove = useCallback(async (fen) => {
+    console.log('🧠 AI calculating move for:', fen);
     
     if (!isReady) {
-      console.warn('⚠️ Simple AI not ready');
+      console.warn('⚠️ AI not ready');
       return;
     }
     
     setIsThinking(true);
     setBestMove(null);
     
-    // Simulate thinking time
-    setTimeout(() => {
+    try {
+      // First try to get move from Stockfish backend
+      const depthMap = {
+        beginner: 8,
+        intermediate: 12,
+        advanced: 15,
+        master: 18,
+        grandmaster: 20
+      };
+      
+      const depth = depthMap[difficulty] || 15;
+      
       try {
-        const game = new Chess(fen);
-        
-        let move;
-        const difficultySettings = {
-          beginner: () => getRandomMove(game),
-          intermediate: () => Math.random() > 0.3 ? getBestMoveSimple(game, 1) : getRandomMove(game),
-          advanced: () => getBestMoveSimple(game, 2),
-          master: () => getBestMoveSimple(game, 2),
-          grandmaster: () => getBestMoveSimple(game, 2)
-        };
-        
-        move = difficultySettings[difficulty] ? difficultySettings[difficulty]() : getBestMoveSimple(game, 1);
-        
-        if (move) {
-          setBestMove(move);
-          console.log('🎯 Simple AI move:', move);
-        } else {
-          console.warn('⚠️ No move found');
+        const stockfishMove = await getStockfishMove(fen, depth);
+        if (stockfishMove) {
+          setBestMove(stockfishMove);
+          console.log('🎯 Stockfish move:', stockfishMove);
+          setIsThinking(false);
+          return;
         }
-        
-        setIsThinking(false);
-      } catch (error) {
-        console.error('❌ Simple AI error:', error);
-        setIsThinking(false);
+      } catch (backendError) {
+        console.warn('⚠️ Backend unavailable, falling back to simple AI:', backendError.message);
       }
-    }, 500 + Math.random() * 1500); // Random thinking time
+      
+      // Fallback to simple AI if backend fails
+      console.log('🔄 Using fallback simple AI...');
+      
+      // Simulate thinking time for fallback
+      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1500));
+      
+      const game = new Chess(fen);
+      let move;
+      const difficultySettings = {
+        beginner: () => getRandomMove(game),
+        intermediate: () => Math.random() > 0.3 ? getBestMoveSimple(game, 1) : getRandomMove(game),
+        advanced: () => getBestMoveSimple(game, 2),
+        master: () => getBestMoveSimple(game, 2),
+        grandmaster: () => getBestMoveSimple(game, 2)
+      };
+      
+      move = difficultySettings[difficulty] ? difficultySettings[difficulty]() : getBestMoveSimple(game, 1);
+      
+      if (move) {
+        setBestMove(move);
+        console.log('🎯 Fallback AI move:', move);
+      } else {
+        console.warn('⚠️ No move found');
+      }
+      
+      setIsThinking(false);
+    } catch (error) {
+      console.error('❌ AI error:', error);
+      setIsThinking(false);
+    }
   }, [isReady, difficulty]);
 
   const resetAI = () => {
     setBestMove(null);
     setIsThinking(false);
-    console.log('🔄 Simple AI reset');
+    console.log('🔄 AI reset');
   };
 
   return {
@@ -136,7 +196,10 @@ export const useSimpleAI = (difficulty = 'intermediate') => {
     isThinking,
     resetAI,
     setBestMove,
-    eloRating: difficulty === 'beginner' ? 800 : difficulty === 'intermediate' ? 1200 : 1600,
-    currentSettings: { depth: 2 }
+    eloRating: difficulty === 'beginner' ? 1000 : difficulty === 'intermediate' ? 1400 : difficulty === 'advanced' ? 1800 : difficulty === 'master' ? 2200 : 2600,
+    currentSettings: { 
+      depth: difficulty === 'beginner' ? 8 : difficulty === 'intermediate' ? 12 : difficulty === 'advanced' ? 15 : difficulty === 'master' ? 18 : 20,
+      engine: 'Stockfish with Simple AI fallback'
+    }
   };
 };
