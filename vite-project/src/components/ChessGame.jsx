@@ -32,11 +32,24 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
   const [actualPlayerColor, setActualPlayerColor] = useState('white');
   const [moveHistory, setMoveHistory] = useState([]);
   const [showEvaluation, setShowEvaluation] = useState(true);
-  const [gameStats, setGameStats] = useState({
-    playerWins: 0,
-    aiWins: 0,
-    draws: 0,
-    totalGames: 0
+  const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
+  
+  // Initialize game stats from localStorage or default values
+  const [gameStats, setGameStats] = useState(() => {
+    const savedStats = localStorage.getItem('chessGameStats');
+    if (savedStats) {
+      try {
+        return JSON.parse(savedStats);
+      } catch (error) {
+        console.error('Error parsing saved stats:', error);
+      }
+    }
+    return {
+      playerWins: 0,
+      aiWins: 0,
+      draws: 0,
+      totalGames: 0
+    };
   });
 
   const { 
@@ -60,12 +73,12 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
   }, [playerColor]);
 
   // Convert chess.js board state to our pieces format
-  const updateBoardState = () => {
+  const updateBoardState = (gameInstance = game) => {
     const newPieces = {};
     for (let i = 0; i < 8; i++) {
       for (let j = 0; j < 8; j++) {
         const square = String.fromCharCode('a'.charCodeAt(0) + j) + (8 - i);
-        const piece = game.get(square);
+        const piece = gameInstance.get(square);
         if (piece) {
           const pieceCode = (piece.color === 'w' ? 'w' : 'b') + piece.type.toUpperCase();
           newPieces[square] = pieceCode;
@@ -73,20 +86,23 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
       }
     }
     setPieces(newPieces);
-    updateGameStatus();
+    updateGameStatus(gameInstance);
   };
 
   // Update game status
-  const updateGameStatus = () => {
+  const updateGameStatus = (gameInstance = game) => {
     let statusText = '';
     
-    if (game.isGameOver()) {
-      if (game.isCheckmate()) {
-        const winner = game.turn() === 'w' ? 'Black' : 'White';
+    if (gameInstance.isGameOver()) {
+      if (gameInstance.isCheckmate()) {
+        const winner = gameInstance.turn() === 'w' ? 'Black' : 'White';
         statusText = `🎉 Checkmate! ${winner} wins!`;
         
-        // Update stats
-        if (winner === 'White') {
+        // Update stats based on actual player vs AI, not piece color
+        const playerColorCode = actualPlayerColor === 'white' ? 'White' : 'Black';
+        const isPlayerWin = winner === playerColorCode;
+        
+        if (isPlayerWin) {
           setGameStats(prev => ({
             ...prev,
             playerWins: prev.playerWins + 1,
@@ -99,12 +115,12 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
             totalGames: prev.totalGames + 1
           }));
         }
-      } else if (game.isDraw()) {
-        if (game.isStalemate()) {
+      } else if (gameInstance.isDraw()) {
+        if (gameInstance.isStalemate()) {
           statusText = '🤝 Draw by stalemate';
-        } else if (game.isThreefoldRepetition()) {
+        } else if (gameInstance.isThreefoldRepetition()) {
           statusText = '🤝 Draw by repetition';
-        } else if (game.isInsufficientMaterial()) {
+        } else if (gameInstance.isInsufficientMaterial()) {
           statusText = '🤝 Draw by insufficient material';
         } else {
           statusText = '🤝 Draw';
@@ -115,10 +131,10 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
           totalGames: prev.totalGames + 1
         }));
       }
-    } else if (game.isCheck()) {
-      statusText = `⚠️ ${game.turn() === 'w' ? 'White' : 'Black'} is in check`;
+    } else if (gameInstance.isCheck()) {
+      statusText = `⚠️ ${gameInstance.turn() === 'w' ? 'White' : 'Black'} is in check`;
     } else {
-      statusText = `${game.turn() === 'w' ? 'White' : 'Black'} to move`;
+      statusText = `${gameInstance.turn() === 'w' ? 'White' : 'Black'} to move`;
     }
     
     setStatus(statusText);
@@ -293,13 +309,32 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
     checkAndMakeAIMove();
   }, [actualPlayerColor, isReady]);
 
+  const handleNewGameClick = () => {
+    // If it's a new game (no moves made), start directly
+    if (moveHistory.length === 0) {
+      startNewGame();
+    } else {
+      // Show confirmation dialog if game is in progress
+      setShowNewGameConfirm(true);
+    }
+  };
+
+  const confirmNewGame = () => {
+    setShowNewGameConfirm(false);
+    startNewGame();
+  };
+
+  const cancelNewGame = () => {
+    setShowNewGameConfirm(false);
+  };
+
   const startNewGame = () => {
     const newGame = new Chess();
     setGame(newGame);
     setLastMoveFrom(null);
     setLastMoveTo(null);
     setMoveHistory([]);
-    updateBoardState();
+    updateBoardState(newGame);
     resetAI();
     
     // If player is black, AI should make the first move
@@ -308,6 +343,17 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
         getBestMove(newGame.fen());
       }, 500);
     }
+  };
+
+  const resetGameStats = () => {
+    const defaultStats = {
+      playerWins: 0,
+      aiWins: 0,
+      draws: 0,
+      totalGames: 0
+    };
+    setGameStats(defaultStats);
+    localStorage.setItem('chessGameStats', JSON.stringify(defaultStats));
   };
 
   const renderBoard = () => {
@@ -382,6 +428,11 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
     return squares;
   };
 
+  // Save game stats to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('chessGameStats', JSON.stringify(gameStats));
+  }, [gameStats]);
+
   return (
     <div className="chess-game">
       <div className="game-header">
@@ -391,7 +442,7 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
         <div className="game-title">
           <h1><span className="chess">Chess</span><span className="wiz">Wiz</span></h1>
         </div>
-        <button className="new-game-button" onClick={startNewGame}>
+        <button className="new-game-button" onClick={handleNewGameClick}>
           New Game
         </button>
       </div>
@@ -399,7 +450,16 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
       <div className="game-container">
         <div className="game-info-panel">
           <div className="game-stats">
-            <h3>Game Statistics</h3>
+            <div className="stats-header">
+              <h3>Game Statistics</h3>
+              <button 
+                className="reset-stats-btn" 
+                onClick={resetGameStats}
+                title="Reset all game statistics"
+              >
+                🔄 Reset
+              </button>
+            </div>
             <div className="stats-grid">
               <div className="stat-item">
                 <span className="stat-value">{gameStats.playerWins}</span>
@@ -412,6 +472,10 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
               <div className="stat-item">
                 <span className="stat-value">{gameStats.draws}</span>
                 <span className="stat-label">Draws</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{gameStats.totalGames}</span>
+                <span className="stat-label">Total Games</span>
               </div>
             </div>
           </div>
@@ -530,6 +594,26 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
           </div>
         </div>
       </div>
+
+      {/* New Game Confirmation Modal */}
+      {showNewGameConfirm && (
+        <div className="modal-overlay">
+          <div className="confirmation-modal">
+            <div className="modal-content">
+              <h3>Start New Game?</h3>
+              <p>Are you sure you want to start a new game? The current game will be lost.</p>
+              <div className="modal-buttons">
+                <button className="confirm-btn" onClick={confirmNewGame}>
+                  Yes, Start New Game
+                </button>
+                <button className="cancel-btn" onClick={cancelNewGame}>
+                  No, Continue Current Game
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
