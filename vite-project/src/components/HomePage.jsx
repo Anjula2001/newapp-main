@@ -20,7 +20,7 @@ function HomePage({ onPlayGame }) {
               <span className="chess-text">Chess</span>
               <span className="wiz-text">Wiz</span>
             </h1>
-            <p className="subtitle">Master the game of kings with Stockfish 17</p>
+            <p className="subtitle">Master the game of kings with intelligent AI</p>
           </div>
 
           <div className="cta-section">
@@ -35,7 +35,7 @@ function HomePage({ onPlayGame }) {
             <div className="feature-card">
               <div className="feature-icon">🎯</div>
               <h3>Professional Engine</h3>
-              <p>Powered by Stockfish 17, the world's strongest chess engine</p>
+              <p>Powered by advanced chess algorithms and intelligent AI</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon">📈</div>
@@ -59,8 +59,8 @@ function HomePage({ onPlayGame }) {
       <div className="stats-section">
         <div className="stats-container">
           <div className="stat-item">
-            <div className="stat-number">17</div>
-            <div className="stat-label">Stockfish Version</div>
+            <div className="stat-number">AI</div>
+            <div className="stat-label">AI Engine</div>
           </div>
           <div className="stat-item">
             <div className="stat-number">3500+</div>

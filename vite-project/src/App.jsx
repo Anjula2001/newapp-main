@@ -35,7 +35,9 @@ function App() {
   return (
     <div className="app">
       {currentView === 'home' && (
-        <HomePage onPlayGame={handlePlayGame} />
+        <HomePage 
+          onPlayGame={handlePlayGame} 
+        />
       )}
       
       {currentView === 'mode-selection' && (

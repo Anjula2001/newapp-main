@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stockfish Test - Verify Working</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .console { background: #000; color: #0f0; padding: 20px; height: 400px; overflow-y: auto; font-family: monospace; margin: 20px 0; }
+    button { background: #007acc; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 3px; cursor: pointer; }
+    button:hover { background: #005a9e; }
+    .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+    .status.loading { background: #fff3cd; border: 1px solid #ffeaa7; }
+    .status.ready { background: #d4edda; border: 1px solid #c3e6cb; }
+    .status.error { background: #f8d7da; border: 1px solid #f5c6cb; }
+  </style>
+</head>
+<body>
+  <h2>Stockfish Verification Test</h2>
+  <p>This test verifies that Stockfish can load and make moves independently.</p>
+  
+  <div id="status" class="status loading">🔄 Initializing...</div>
+  
+  <div>
+    <button onclick="testBasicConnection()">Test Basic Connection</button>
+    <button onclick="testMove()">Test Move (e2e4)</button>
+    <button onclick="testPosition()">Test Custom Position</button>
+    <button onclick="clearConsole()">Clear Console</button>
+  </div>
+  
+  <div class="console" id="console">
+    <div>🧠 Stockfish Console - Starting...</div>
+  </div>
+
+  <script>
+    let stockfish;
+    let isReady = false;
+    
+    function log(message) {
+      const console = document.getElementById('console');
+      const timestamp = new Date().toLocaleTimeString();
+      console.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+      console.scrollTop = console.scrollHeight;
+    }
+
+    function updateStatus(message, type = 'loading') {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+    }
+
+    function clearConsole() {
+      document.getElementById('console').innerHTML = '<div>🧠 Console cleared</div>';
+    }
+
+    // Initialize Stockfish immediately
+    function initStockfish() {
+      try {
+        updateStatus('🔄 Loading Stockfish from CDN...', 'loading');
+        log('📦 Creating Stockfish worker...');
+        
+        stockfish = new Worker('https://cdn.jsdelivr.net/npm/stockfish@11/stockfish.js');
+        
+        stockfish.onmessage = function(e) {
+          const line = e.data;
+          log('📨 ' + line);
+          
+          if (line.includes('uciok')) {
+            log('✅ UCI protocol confirmed');
+          } else if (line.includes('readyok')) {
+            isReady = true;
+            updateStatus('✅ Stockfish Ready - Click buttons to test', 'ready');
+            log('✅ Stockfish is fully ready!');
+          } else if (line.startsWith('bestmove')) {
+            log('🎯 Move found: ' + line);
+            updateStatus('✅ Move calculation successful', 'ready');
+          }
+        };
+        
+        stockfish.onerror = function(error) {
+          log('❌ Error: ' + error.message);
+          updateStatus('❌ Stockfish failed to load', 'error');
+        };
+        
+        // Start UCI
+        log('📤 Sending UCI command...');
+        stockfish.postMessage('uci');
+        
+        setTimeout(() => {
+          log('📤 Sending isready command...');
+          stockfish.postMessage('isready');
+        }, 1000);
+        
+      } catch (error) {
+        log('❌ Failed to create Stockfish: ' + error.message);
+        updateStatus('❌ Failed to create Stockfish worker', 'error');
+      }
+    }
+
+    function testBasicConnection() {
+      if (!isReady) {
+        log('⚠️ Stockfish not ready yet');
+        return;
+      }
+      
+      log('🧪 Testing basic connection...');
+      stockfish.postMessage('uci');
+      stockfish.postMessage('isready');
+    }
+
+    function testMove() {
+      if (!isReady) {
+        log('⚠️ Stockfish not ready yet');
+        return;
+      }
+      
+      log('🧪 Testing move from starting position after 1.e4...');
+      updateStatus('🧠 Calculating move...', 'loading');
+      
+      stockfish.postMessage('ucinewgame');
+      stockfish.postMessage('position fen rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1');
+      stockfish.postMessage('go depth 8');
+    }
+
+    function testPosition() {
+      if (!isReady) {
+        log('⚠️ Stockfish not ready yet');
+        return;
+      }
+      
+      log('🧪 Testing complex position...');
+      updateStatus('🧠 Analyzing position...', 'loading');
+      
+      stockfish.postMessage('ucinewgame');
+      stockfish.postMessage('position fen r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 4 4');
+      stockfish.postMessage('go depth 10');
+    }
+
+    // Start initialization when page loads
+    window.onload = initStockfish;
+  </script>
+</body>
+</html>

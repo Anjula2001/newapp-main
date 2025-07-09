@@ -9,7 +9,7 @@ function GameModeSelection({ selectedDifficulty, onBackToHome, onSelectMode }) {
     {
       id: 'single',
       name: 'Single Player',
-      subtitle: 'vs Stockfish 17',
+      subtitle: 'vs Intelligent AI',
       description: 'Play against the world\'s strongest chess engine with drag-and-drop moves',
       features: [
         `AI Strength: ${getDifficultyLabel(selectedDifficulty)}`,
@@ -146,7 +146,7 @@ function GameModeSelection({ selectedDifficulty, onBackToHome, onSelectMode }) {
               <div className="preview-info">
                 <h4>🎯 Single Player Features</h4>
                 <ul>
-                  <li>Play against professional-strength Stockfish 17</li>
+                  <li>Play against professional-strength AI engine</li>
                   <li>Intuitive drag-and-drop piece movement</li>
                   <li>Real-time engine analysis and thinking display</li>
                   <li>Automatic move validation and game state tracking</li>

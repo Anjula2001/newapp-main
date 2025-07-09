@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Stockfish Files</title>
+</head>
+<body>
+  <h2>Testing Available Stockfish Files</h2>
+  <div id="output"></div>
+  
+  <script>
+    const output = document.getElementById('output');
+    
+    function log(message) {
+      output.innerHTML += '<div>' + message + '</div>';
+      console.log(message);
+    }
+    
+    // Test 1: Direct Stockfish
+    log('=== Testing Direct Stockfish ===');
+    try {
+      const script1 = document.createElement('script');
+      script1.src = './stockfish.js';
+      script1.onload = function() {
+        log('✅ stockfish.js loaded');
+        if (typeof Stockfish !== 'undefined') {
+          const sf = Stockfish();
+          sf.addMessageListener(function(line) {
+            log('Direct SF: ' + line);
+          });
+          sf.postMessage('uci');
+        } else {
+          log('❌ Stockfish constructor not found');
+        }
+      };
+      script1.onerror = function() {
+        log('❌ Failed to load stockfish.js');
+        testWorkerApproach();
+      };
+      document.head.appendChild(script1);
+    } catch (error) {
+      log('❌ Error with direct approach: ' + error.message);
+      testWorkerApproach();
+    }
+    
+    function testWorkerApproach() {
+      log('=== Testing Worker Approach ===');
+      try {
+        const worker = new Worker('./working-stockfish-worker.js');
+        worker.onmessage = function(e) {
+          log('Worker: ' + JSON.stringify(e.data));
+        };
+        worker.onerror = function(error) {
+          log('❌ Worker error: ' + error.message);
+          testCDNApproach();
+        };
+        worker.postMessage('init');
+        
+        setTimeout(() => {
+          log('Testing worker move...');
+          worker.postMessage({
+            type: 'position',
+            fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+            depth: 5
+          });
+        }, 2000);
+        
+      } catch (error) {
+        log('❌ Worker creation failed: ' + error.message);
+        testCDNApproach();
+      }
+    }
+    
+    function testCDNApproach() {
+      log('=== Testing CDN Approach ===');
+      try {
+        const cdnWorker = new Worker('https://cdn.jsdelivr.net/npm/stockfish@11/stockfish.js');
+        cdnWorker.onmessage = function(e) {
+          log('CDN: ' + e.data);
+        };
+        cdnWorker.onerror = function(error) {
+          log('❌ CDN error: ' + error.message);
+        };
+        cdnWorker.postMessage('uci');
+        cdnWorker.postMessage('isready');
+        
+        setTimeout(() => {
+          cdnWorker.postMessage('position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+          cdnWorker.postMessage('go depth 5');
+        }, 2000);
+        
+      } catch (error) {
+        log('❌ CDN approach failed: ' + error.message);
+      }
+    }
+  </script>
+</body>
+</html>

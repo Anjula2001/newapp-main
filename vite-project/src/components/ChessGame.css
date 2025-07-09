@@ -110,30 +110,40 @@
 }
 
 .engine-status {
-  padding: 1rem;
+  padding: 0.8rem 1rem;
   border-radius: 8px;
-  text-align: center;
-  font-weight: 500;
+  margin-bottom: 1rem;
   font-size: 0.9rem;
-  line-height: 1.4;
+  font-weight: 500;
+  text-align: center;
 }
 
 .engine-status.loading {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  background: rgba(251, 191, 36, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
 }
 
 .engine-status.ready {
-  background: rgba(40, 167, 69, 0.2);
-  color: #28a745;
-  border: 1px solid rgba(40, 167, 69, 0.3);
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
 }
 
 .engine-status.thinking {
-  background: rgba(0, 123, 255, 0.2);
-  color: #007bff;
-  border: 1px solid rgba(0, 123, 255, 0.3);
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .board-container {
@@ -327,6 +337,168 @@
 .current-position strong, .move-count strong, 
 .difficulty-info strong, .elo-info strong {
   color: #ffd700;
+}
+
+/* Enhanced Stockfish Engine Features */
+.position-evaluation {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.position-evaluation h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #ffd700;
+}
+
+.eval-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.eval-score {
+  font-size: 1.2rem;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.eval-score.positive {
+  color: #4ade80;
+}
+
+.eval-score.negative {
+  color: #f87171;
+}
+
+.eval-score.neutral {
+  color: #94a3b8;
+}
+
+.eval-mate {
+  font-size: 1.1rem;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.eval-mate.mate-positive {
+  color: #22c55e;
+}
+
+.eval-mate.mate-negative {
+  color: #ef4444;
+}
+
+.eval-depth {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.engine-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.toggle-eval-btn, .stop-thinking-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.toggle-eval-btn:hover, .stop-thinking-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.stop-thinking-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.stop-thinking-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+/* Enhanced Move History */
+.moves-list {
+  margin-top: 1.5rem;
+}
+
+.moves-list h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #ffd700;
+}
+
+.moves-container {
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.move-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.2rem;
+  font-size: 0.85rem;
+  transition: background 0.2s ease;
+}
+
+.move-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.move-item.player-move {
+  border-left: 3px solid #3b82f6;
+}
+
+.move-item.ai-move {
+  border-left: 3px solid #f59e0b;
+}
+
+.move-number {
+  font-weight: bold;
+  color: #94a3b8;
+  min-width: 2rem;
+}
+
+.move-notation {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: white;
+  min-width: 3rem;
+}
+
+.move-squares {
+  font-family: 'Courier New', monospace;
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.ai-badge {
+  margin-left: auto;
+  font-size: 0.7rem;
+}
+
+.no-moves {
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 1rem;
 }
 
 /* Responsive Design */

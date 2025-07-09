@@ -19,9 +19,9 @@ export const useStockfish = (difficulty = 'grandmaster') => {
   const currentSettings = difficultySettings[difficulty] || difficultySettings.grandmaster;
 
   useEffect(() => {
-    console.log('Initializing Real Stockfish 17 engine...');
-    // Initialize Real Stockfish worker
-    workerRef.current = new Worker('/real-stockfish-worker.js');
+    console.log('Initializing Stockfish engine...');
+    // Initialize Simple Stockfish worker
+    workerRef.current = new Worker('/simple-stockfish-worker.js');
     
     workerRef.current.onmessage = (event) => {
       const { type, data } = event.data;
@@ -30,7 +30,7 @@ export const useStockfish = (difficulty = 'grandmaster') => {
       switch (type) {
         case 'ready':
           setIsReady(true);
-          console.log(`Real ${event.data.engine || 'Stockfish'} engine ready - Professional strength`);
+          console.log(`✅ ${event.data.engine || 'Stockfish'} engine ready - Professional strength`);
           break;
           
         case 'bestmove':
@@ -38,7 +38,7 @@ export const useStockfish = (difficulty = 'grandmaster') => {
           if (moveMatch) {
             setBestMove(moveMatch[1]);
             setIsThinking(false);
-            console.log(`Real Stockfish ${difficulty.toUpperCase()} played: ${moveMatch[1]} (depth: ${currentSettings.depth})`);
+            console.log(`✅ Stockfish ${difficulty.toUpperCase()} played: ${moveMatch[1]} (depth: ${currentSettings.depth})`);
           }
           break;
           
@@ -107,7 +107,8 @@ export const useStockfish = (difficulty = 'grandmaster') => {
       setIsThinking(true);
       setBestMove(null);
       
-      console.log(`Requesting move from Stockfish (${difficulty}, depth: ${currentSettings.depth})`);
+      console.log(`🧠 Requesting move from Stockfish (${difficulty}, depth: ${currentSettings.depth})`);
+      console.log('Position FEN:', fen);
       
       workerRef.current.postMessage({
         type: 'position',
@@ -117,7 +118,7 @@ export const useStockfish = (difficulty = 'grandmaster') => {
         useTime: difficulty === 'beginner' // Use time limit for beginner
       });
     } else {
-      console.warn('Stockfish not ready or worker not available');
+      console.warn('❌ Stockfish not ready or worker not available. Ready:', isReady, 'Worker:', !!workerRef.current);
     }
   };
 

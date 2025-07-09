@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "chess.js": "^1.2.0",
+    "js-chess-engine": "^1.0.2",
     "mongodb": "^6.16.0",
     "react": "^19.1.0",
+    "react-chessboard": "^5.0.1",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {

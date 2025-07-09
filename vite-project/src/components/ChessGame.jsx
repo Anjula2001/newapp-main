@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Chess } from 'chess.js'
-import { useStockfish } from '../useStockfish'
+import { useSimpleAI } from '../useSimpleAI'
 import './ChessGame.css'
 import wP from '../images/wP.png'
 import wR from '../images/wR.png'
@@ -30,6 +30,8 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
   const [lastMoveTo, setLastMoveTo] = useState(null);
   const [status, setStatus] = useState('');
   const [actualPlayerColor, setActualPlayerColor] = useState('white');
+  const [moveHistory, setMoveHistory] = useState([]);
+  const [showEvaluation, setShowEvaluation] = useState(true);
   const [gameStats, setGameStats] = useState({
     playerWins: 0,
     aiWins: 0,
@@ -37,7 +39,16 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
     totalGames: 0
   });
 
-  const { isReady, bestMove, getBestMove, isThinking, eloRating, currentSettings, resetAI } = useStockfish(difficulty);
+  const { 
+    isReady, 
+    bestMove, 
+    getBestMove, 
+    isThinking, 
+    eloRating, 
+    currentSettings, 
+    resetAI,
+    setBestMove
+  } = useSimpleAI(difficulty);
 
   // Determine actual player color based on selection
   useEffect(() => {
@@ -160,59 +171,126 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
       if (move) {
         setLastMoveFrom(from);
         setLastMoveTo(to);
+        
+        // Create new game state
         const newGame = new Chess(game.fen());
         setGame(newGame);
+        
+        // Add move to history
+        setMoveHistory(prev => [...prev, {
+          move: move.san,
+          from: from,
+          to: to,
+          fen: newGame.fen(),
+          moveNumber: Math.ceil(newGame.history().length / 2)
+        }]);
+        
         updateBoardState();
 
-        // Trigger AI move after player's move
+        // Trigger AI move after player's move - use newGame state
         const aiColor = actualPlayerColor === 'white' ? 'b' : 'w';
-        if (game.turn() === aiColor && !game.isGameOver() && isReady) {
+        const currentTurn = newGame.turn();
+        const gameOver = newGame.isGameOver();
+        
+        console.log(`🎯 Move analysis:`, {
+          playerColor: actualPlayerColor,
+          aiColor,
+          currentTurn,
+          gameOver,
+          engineReady: isReady,
+          shouldTriggerAI: currentTurn === aiColor && !gameOver && isReady
+        });
+        
+        if (currentTurn === aiColor && !gameOver && isReady) {
+          console.log(`🤖 Triggering AI move. Current FEN:`, newGame.fen());
           setTimeout(() => {
-            getBestMove(game.fen());
-          }, 300);
+            console.log('🔄 Calling getBestMove...');
+            getBestMove(newGame.fen());
+          }, 1000); // Increased delay for stability
+        } else {
+          console.log(`❌ AI move not triggered because:`, {
+            wrongTurn: currentTurn !== aiColor,
+            gameOver: gameOver,
+            engineNotReady: !isReady
+          });
         }
       }
     } catch (error) {
-      console.log('Invalid move!');
+      console.log('Invalid move!', error);
     }
   };
 
   // Handle AI move
   useEffect(() => {
     const aiColor = actualPlayerColor === 'white' ? 'b' : 'w';
+    console.log('AI move effect triggered:', { bestMove, aiColor, currentTurn: game.turn(), gameOver: game.isGameOver() });
+    
     if (bestMove && game.turn() === aiColor && !game.isGameOver()) {
+      console.log(`🤖 AI attempting move: ${bestMove}`);
       try {
         const move = game.move(bestMove);
         if (move) {
+          console.log(`✅ AI move successful:`, move);
           setLastMoveFrom(move.from);
           setLastMoveTo(move.to);
+          
+          // Add AI move to history
+          setMoveHistory(prev => [...prev, {
+            move: move.san,
+            from: move.from,
+            to: move.to,
+            fen: game.fen(),
+            moveNumber: Math.ceil(game.history().length / 2),
+            isAI: true
+          }]);
+          
           const newGame = new Chess(game.fen());
           setGame(newGame);
           updateBoardState();
+          
+          // Clear the best move to prevent re-application
+          setBestMove(null);
+          
+        } else {
+          console.error('❌ AI move failed - invalid move:', bestMove);
+          setBestMove(null);
         }
       } catch (error) {
-        console.error('Invalid AI move:', bestMove);
+        console.error('❌ AI move error:', error, 'Move:', bestMove);
+        setBestMove(null);
       }
     }
-  }, [bestMove, actualPlayerColor]);
+  }, [bestMove, actualPlayerColor, game]);
 
   // Initialize AI when ready
   useEffect(() => {
     if (isReady) {
-      console.log(`Stockfish ${difficulty} ready with ${eloRating} ELO`);
+      console.log(`✅ Chess Engine ${difficulty} ready with ${eloRating} ELO`);
+      console.log('Current settings:', currentSettings);
     }
   }, [isReady, difficulty, eloRating]);
 
   useEffect(() => {
+    console.log('ChessGame component initializing...');
     // Initialize the board
     const newGame = new Chess();
     setGame(newGame);
     updateBoardState();
     
-    // If player is black, AI should make the first move
-    if (actualPlayerColor === 'black' && isReady) {
-      getBestMove(newGame.fen());
-    }
+    // Wait for Chess Engine to be ready before making AI moves
+    const checkAndMakeAIMove = () => {
+      if (actualPlayerColor === 'black' && isReady) {
+        console.log('Player is black and Chess Engine is ready, requesting AI first move...');
+        setTimeout(() => {
+          getBestMove(newGame.fen());
+        }, 1000);
+      } else if (actualPlayerColor === 'black' && !isReady) {
+        console.log('Player is black but Chess Engine not ready yet, waiting...');
+        setTimeout(checkAndMakeAIMove, 1000);
+      }
+    };
+    
+    checkAndMakeAIMove();
   }, [actualPlayerColor, isReady]);
 
   const startNewGame = () => {
@@ -220,6 +298,7 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
     setGame(newGame);
     setLastMoveFrom(null);
     setLastMoveTo(null);
+    setMoveHistory([]);
     updateBoardState();
     resetAI();
     
@@ -339,17 +418,58 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
 
           {/* Enhanced Engine Status */}
           <div className="engine-info">
-            {!isReady && <div className="engine-status loading">Loading Real Stockfish 17...</div>}
+            {!isReady && <div className="engine-status loading">🔄 Loading Chess Engine...</div>}
             {isReady && !isThinking && (
               <div className="engine-status ready">
-                Stockfish 17 Ready • {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} • {eloRating} ELO
+                ✅ Chess Engine Ready • {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} • {eloRating} ELO
               </div>
             )}
             {isThinking && (
               <div className="engine-status thinking">
-                Stockfish 17 Calculating... • Depth {currentSettings?.depth || 6} • {eloRating} ELO
+                🧠 Chess Engine Thinking... • Level {currentSettings?.depth || 2} • {eloRating} ELO
               </div>
             )}
+            
+            {/* Position Evaluation */}
+            {/* {showEvaluation && evaluation && (
+              <div className="position-evaluation">
+                <h4>Position Analysis</h4>
+                <div className="eval-display">
+                  {evaluation.type === 'cp' ? (
+                    <span className={`eval-score ${evaluation.value > 0 ? 'positive' : evaluation.value < 0 ? 'negative' : 'neutral'}`}>
+                      {evaluation.value > 0 ? '+' : ''}{evaluation.value.toFixed(1)}
+                    </span>
+                  ) : (
+                    <span className={`eval-mate ${evaluation.value > 0 ? 'mate-positive' : 'mate-negative'}`}>
+                      Mate in {Math.abs(evaluation.value)}
+                    </span>
+                  )}
+                  <span className="eval-depth">Depth: {evaluation.depth}</span>
+                </div>
+              </div>
+            )} */}
+            
+            <div className="engine-controls">
+              {/* Debug info for Chess Engine */}
+              <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.5rem' }}>
+                Debug: Ready={isReady ? 'Yes' : 'No'} | Thinking={isThinking ? 'Yes' : 'No'} | Move={bestMove || 'None'}
+              </div>
+              
+              {/* <button 
+                onClick={() => setShowEvaluation(!showEvaluation)}
+                className="toggle-eval-btn"
+              >
+                {showEvaluation ? '📊 Hide Eval' : '📊 Show Eval'}
+              </button> */}
+              {isThinking && (
+                <button 
+                  onClick={() => console.log('Stop thinking not implemented')}
+                  className="stop-thinking-btn"
+                >
+                  ⏹️ Stop
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -388,6 +508,24 @@ function ChessGame({ difficulty, playerColor, onBackToHome }) {
             </div>
             <div className="elo-info">
               <strong>AI Strength:</strong> {eloRating} ELO
+            </div>
+            
+            {/* Move History */}
+            <div className="moves-list">
+              <h4>Recent Moves</h4>
+              <div className="moves-container">
+                {moveHistory.slice(-10).map((moveData, index) => (
+                  <div key={index} className={`move-item ${moveData.isAI ? 'ai-move' : 'player-move'}`}>
+                    <span className="move-number">{moveData.moveNumber}.</span>
+                    <span className="move-notation">{moveData.move}</span>
+                    <span className="move-squares">{moveData.from}-{moveData.to}</span>
+                    {moveData.isAI && <span className="ai-badge">🤖</span>}
+                  </div>
+                ))}
+                {moveHistory.length === 0 && (
+                  <div className="no-moves">No moves yet</div>
+                )}
+              </div>
             </div>
           </div>
         </div>
